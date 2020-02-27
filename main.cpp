@@ -1,4 +1,4 @@
-#include "variabel.h"
+#include "variable.h"
 #define PI 3.14159265
 
 void OpenCamera(){
