@@ -1,7 +1,4 @@
-# Rafflesia
-Rafflesia Bogor
-
-# Bomb Scoring System
+# Rafflesia Bomb Scoring System
 Bomb Scoring is a system that functions to determine whether a bomb falls on a target or not. In this brief explanation, I want to explain several sections:
 
 - References
