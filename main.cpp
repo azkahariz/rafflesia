@@ -3,7 +3,7 @@
 
 void OpenCamera(){
     // Gunakan file di dalam komputer
-    cap.open("/media/azkahariz/Local Disk1/Misc/Bomb Scoring/Video/_TIR0614.MOV");
+    cap.open("/media/azkahariz/Local Disk1/Misc/Bomb Scoring/Video/dataset_bomb_datar.mp4");
     // Cek apakah kamera terbuka
     if(!cap.isOpened()){
         cerr << "ERROR! Unable to open camera \n";
@@ -14,6 +14,10 @@ void ReadReference()
 {
     // Membaca gambar referensi
     cap >> imReference;
+    cvtColor(imReference,imReference, CV_BGR2GRAY);
+    resize(imReference, imReference, Size(448,448));
+    //GaussianBlur(imReference,imReference,Size(13,13),0);
+
 }
 
 void onMouse(int event, int x, int y, int flags, void* userdata)
@@ -63,12 +67,22 @@ void pilihTitikKamera()
 
 void BackgroundSubtraction()
 {
-    GaussianBlur(src,frame,Size(11,11),0);
+    GaussianBlur(src,frame,Size(3,3),0);
+    cvtColor(frame,frame,CV_BGR2GRAY);
+    resize(frame, frame, Size(448,448));
     pBackSub->apply(frame,fgMask);
+    //fgMask = frame - imReference;
+    //fgMask = fgMask - 30;
+    double min, max;
+    minMaxIdx(fgMask, &min, &max);
+    fgMask = fgMask*(255/max);
+
+    cout <<  "max pixel: " << max << endl;
+    cout <<  "min pixel: " << min << endl;
     morphologyEx(fgMask,fgMask,MORPH_OPEN,element);
-    dilate(fgMask, dilatasi, Mat::ones(20,20,CV_8U));
+    dilate(fgMask, dilatasi, Mat::ones(30,30,CV_8UC1));
     findContours(dilatasi, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
-    vector<Rect> boundRect( contours.size() );
+    //    vector<Rect> boundRect( contours.size() );
 
 }
 
@@ -87,21 +101,21 @@ int main()
     {
 
         cap >> src;
-        cvtColor(src, imRegGray, CV_BGR2GRAY);
-        medianBlur(imRegGray, imRegGray, 3);
         BackgroundSubtraction();
         cout << "Bomb terdeteksi : " << contours.size() << endl;
         vector<Rect> boundRect( contours.size() );
+
+        // Apabila ada contour yang ditemukan
         if (contours.size() > 0)
         {
-            for(int i = 0; i < contours.size(); i++)
+            for(int i = 0; i < (int)contours.size(); i++)
             {
                 double area = contourArea(contours[i]);
-                cout << "area contours-" << i << ": " << area << endl;
-                if(area > 2000)
+                if(area > 0)
                 {
+                    cout << "area contours-" << i+1 << ": " << area << endl;
                     boundRect[i] = boundingRect(contours[i]);
-                    rectangle( src, boundRect[i].tl(), boundRect[i].br(), (0,0,255),2 );
+                    rectangle( src, boundRect[i].tl(), boundRect[i].br(), 0,0,255,2 );
                 }
             }
         }
